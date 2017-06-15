@@ -1,0 +1,100 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style>
+            *{
+                margin:0;
+                padding:0;
+                box-sizing: border-box;
+            }
+        button{
+            display:block;
+            width:100px;
+            height:30px;
+            line-height:30px;
+            background:#66BAB7;
+            color:#fff;
+            text-align:center;
+            border-radius:4px;
+            margin:20px auto;
+            border:0;
+            font-size:16px;
+        }
+        li{
+            list-style: none;
+            width:98%;
+            height:40px;
+            line-height:40px;
+            margin:10px auto;
+            padding:0 6px;
+            border-radius: 4px;
+            background:#cbecd7;
+            color:#333;
+            font-size:16px;
+        }
+        </style>
+    </head>
+    <body>
+        <ul id="ct">
+            
+        </ul>
+        <button>加载</button>
+    </body>
+    <script>
+        var btn =document.querySelector("button");
+        var ct =document.querySelector('#ct');
+        var curIndex = 0  //当前要加载的数据的序号
+        var len = 5   // 每次加载多少个数据
+        var isLoading = false  //状态锁，用于判断是否在加载数据
+
+        btn.addEventListener('click', function(e){
+            e.preventDefault();  //防止点击 a 链接页面跳到顶部
+
+            if(isLoading) {
+                return   //如果正在请求数据，那这次点击什么都不做
+            }
+
+            //执行到这里说明 没有正在发出的请求，那后面就可以发请求
+            ajax('/loadMore', {
+                idx: curIndex,
+                len: len
+            }, function(data){
+                appendData(data)
+                isLoading = false   //数据到来之后 解锁
+                curIndex = curIndex + len  //修改序号，下次要数据就从新序号开始要
+                console.log(curIndex)
+            })
+                isLoading = true   //发请求之前做个标记加锁
+
+        }) 
+
+
+        function ajax(url, json, onSuccess, onError) {
+            var xhr = new XMLHttpRequest()
+            var arr = [];
+            for (key in json) {
+                arr.push(key + '=' + json[key])
+            }
+            url += '?' + arr.join('&')
+            xhr.open('get', url)
+            xhr.send()
+
+            xhr.onload = function(){
+                if((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304){
+                    onSuccess(JSON.parse(this.response))
+                }else{
+                    onError && onError()
+                }
+            }
+        }
+        function appendData(data){
+            for(var i = 0; i<data.length; i++){
+                var child = document.createElement('li')
+                child.innerText = data[i]
+                ct.appendChild(child)
+            }
+  }
+    </script>
+</html>
